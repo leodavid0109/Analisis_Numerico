@@ -20,6 +20,7 @@ def metodoPuntosFijos(f, x_0, tol, iteraciones=10000):
 if __name__ == "__main__":
     fx = lambda x: np.exp(-x) - x
     gx = lambda x: np.exp(-x)
+    # Caso 1: Se evidencia que en menos de 14 iteraciones no logra la convergencia con la tolerancia colocada
     print(metodoPuntosFijos(gx, 0, 0.001, 15))
     print(metodoPuntosFijos(gx, 0, 0.001, 10))
     print(metodoPuntosFijos(fx, 0, 0.0001, 5))
