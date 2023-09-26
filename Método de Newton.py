@@ -30,9 +30,9 @@ if __name__ == "__main__":
     fdx = lambda x: np.exp(x) - 2*x
 
     print("Prueba 1: Función e^x - x^2 con x_0 = -1")
-    print(metodoNewton(fx, fdx, -1, 0.00001))
+    print(metodoNewton(fx, fdx, -1, 0.0000001))
     print("Prueba 2: Función e^x - x^2 con x_0 = 10")
     print(metodoNewton(fx, fdx, 10, 0.00001))
-    print("Prueba 3: Función e^x - x^2 con x_0 = 5000")
-    #print(metodoNewton(fx, fdx, 5000, 0.00001, 1000))
-    print("Generó error al evaluar la función, es demasiado largo el resultado de e^5000")
+    print("Prueba 3: Función e^x - x^2 con x_0 = 500 y cantidad de iteraciones 100")
+    print(metodoNewton(fx, fdx, 500, 0.00001, 100))
+    print(metodoNewton(fx, fdx, 500, 0.00001, 600))

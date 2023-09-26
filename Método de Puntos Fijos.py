@@ -21,3 +21,5 @@ if __name__ == "__main__":
     fx = lambda x: np.exp(-x) - x
     gx = lambda x: np.exp(-x)
     print(metodoPuntosFijos(gx, 0, 0.001, 15))
+    print(metodoPuntosFijos(gx, 0, 0.001, 10))
+    print(metodoPuntosFijos(fx, 0, 0.0001, 5))
