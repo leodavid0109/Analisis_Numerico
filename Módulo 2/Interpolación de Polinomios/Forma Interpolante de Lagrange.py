@@ -22,7 +22,6 @@ def interpolacionLagrange(x, x_i, y_i):
     return pol, resultante
 
 
-
 if __name__ == "__main__":
     x = sp.Symbol("x")
 

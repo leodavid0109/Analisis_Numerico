@@ -7,6 +7,7 @@ def jacobi(n, matrix, resultant, beginning, iterations):
             beginning[i] = auxiliar[i]
     return beginning
 
+
 if __name__ == "__main__":
     # Caso de Prueba 1
     A = [[4, -1, 0],

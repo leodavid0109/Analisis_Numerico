@@ -4,6 +4,7 @@ def gaussSeidel(n, matrix, resultant, beginning, iterations):
             beginning[i] = (resultant[i] - sum((matrix[i][j] * beginning[j]) for j in range(n) if i != j)) / matrix[i][i]
     return beginning
 
+
 if __name__ == "__main__":
     # Caso de Prueba 1. Tomado del ejemplo 3 del libro
     A = [[2, -1, 0],

@@ -18,3 +18,9 @@ M = 5  # Número de iteraciones
 
 # Ejecuta el método del descenso más rápido
 x_final = descenso_mas_rapido(x0, A, b, M)
+
+conf = [0] * 2
+for i in range(2):
+    for j in range(2):
+        conf[i] += (A[i][j] * x_final[j])
+print("Ax=b: " + str(conf))
