@@ -1,6 +1,6 @@
 import numpy as np
 
-# Si p = 0, tenemos el método de Euler.
+# Si p = 0, tenemos el método de Euler que ya esta implementado.
 
 # Si p = 1:
 def adams_bashfort_1(f, a, b, N, y0):
