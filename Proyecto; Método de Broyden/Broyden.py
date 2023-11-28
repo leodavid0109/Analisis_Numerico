@@ -1,110 +1,78 @@
 import numpy as np
-import warnings
+from scipy.optimize import approx_fprime
+
 """ 'Buen' método Broyden para un sistema de ecuaciones no lineales.
-Requiere el vector inicial X. Eps opcional. J (jacobiano) inicial aproximada por diferencias finitas.
-Dentro del código se pueden ver las iteraciones de cada paso, solo hace falta quitar los comentarios en las líneas 9 y 26."""
+Requiere el vector inicial X. Eps opcional. J (jacobiano) inicial aproximada por diferencias finitas."""
 
-np.seterr(all='raise')
-warnings.filterwarnings('error')
-
-def broyden(X, eps=1e-6):
-    # Quitar comentario para ver iteración
-    # print(X)
-
-    # Calcular el valor de la función en el punto X
-    FX = F(X)
-
-    # Inicializar la inversa de la matriz Jacobiana utilizando fdJ
-    invJ = np.linalg.inv(fdJ(X, FX))
-
-    # Iterar hasta que la norma de FX sea menor que eps
-    while np.linalg.norm(FX) > eps:
-        # print("-----------------------------------------------------")
-        # Guardar el valor actual de X
-        Xold = X
-
-        # Actualizar X utilizando el método de Broyden
-        X = X - np.dot(invJ, FX)
-
-        # Quitar comentario para ver iteración
-        print(X)
-
-        # Calcular la diferencia entre los nuevos y antiguos valores de X
-        deltaX = X - Xold
-
-        # Guardar el valor actual de FX
-        FXold = FX
-
-        # Calcular el nuevo valor de la función en el punto X
-        
-        FX = F(X)
-
-        if FX.any() == "Error":
-            return X
-        
-        # Calcular la diferencia entre los nuevos y antiguos valores de FX
-        deltaF = FX - FXold
-        
-        # Transponer deltaX
-        trans = deltaX.T
-
-        # Actualizar la inversa de la matriz Jacobiana utilizando el método de Broyden
-        # invJ = invJ + np.dot((deltaX - np.dot(invJ, deltaF)), trans) / np.dot(trans, np.dot(invJ, deltaF))
-        # print("***",(deltaX - np.dot(invJ, deltaF)))
-        invJ = invJ + np.dot((deltaX - np.dot(invJ, deltaF)) / (np.dot(trans, np.dot(invJ, deltaF))),np.dot(trans,invJ))
-        # print("+++",invJ)
-
-    return X
-
-"""F es la función"""
-
-def F(X):
-    return np.array([X[0]**2 - X[1] - 1, X[0] - X[1]**2 + 1])
-    # try:
-    #     X[0]**2 + X[1]**2 + X[2]**2 - 3
-    # except RuntimeWarning:
-    #     return "Error"
-    
-    # return np.array([X[0]**2 + X[1]**2 + X[2]**2 - 3, 
-    #                  X[0]**2 + X[1]**2 - X[2] - 1,
-    #                  X[0] + X[1] + X[2] - 3])
-
-"""La función fdJ toma los argumentos X, FX, h y calcula la matriz jacobiana usando diferencias finitas.
-El parámetro FX es opcional y, si no se proporciona, lo calcula llamando a la función F(X).
-Reemplace x1 y x2 con sus valores iniciales reales cuando use la función fdJ."""
-
-
-def fdJ(X, FX, h=1e-4):
-    # Si FX no se proporciona, calcularlo llamando a la función F(X)
-    if FX is None:
-        FX = F(X)
-
-    n = len(X)
-    J = np.zeros((n, n))
-
-    # Calcular las derivadas parciales numéricas
+def jacobian_fd(f, x, h=1e-5):
+    n = len(x)
+    jacobian_matrix = np.zeros((n, n))
     for i in range(n):
-        X_plus_h = X.copy()
-        X_plus_h[i] += h
+        jacobian_matrix[i, :] = approx_fprime(x, lambda y: np.array(f(*y)).flatten()[i], h)
+    return np.linalg.inv(np.matrix(jacobian_matrix))
 
-        J[:, i] = (F(X_plus_h) - FX) / h
+def f(*x):
+    global functions
+    x_dict = {f'x{i}': x[i] for i in range(len(x))}
+    results = [eval(func, {**x_dict, 'np': np}) for func in functions]
+    return np.matrix(results).T
 
-    return J
+def broyden(x0, N = 10, tol = 1e-5):
+    n = len(x0)
+    header = "k \t " + "\t\t ".join([f"x{i+1}" for i in range(n)]) + "\t\t ||x(k) - x(k-1)||"
+    print(header)
 
-# print(broyden([1.0, 0.0, 1.0]))
-print(broyden([1.5, 2.0]))
-# Casos de prueba
-def test_broyden():
-    # Test case 1
-    result = broyden([1.5, 2.0])
-    print(result)
+    A = jacobian_fd(f, x0)
+    v = f(*x0)
+    k = 2
+    s = -A * v 
+    x0 = np.matrix(x0).T + s
+            
+    while k < N:
+        w = v
+        v = f(*[x0[i,0].item() for i in range(n)])
+        y = v - w
+        z = -A * y
+        p = (s.T * A * y).item()
+        A = A+1/p*(s+z)*s.T*A
+        s = -A * v
+        x0 = x0 + s
+        print("{0:1d} \t {1} \t {2:1.6f}".format(k, "\t ".join("{:1.6f}".format(x0[i,0].item()) for i in range(n)), np.linalg.norm(s)))
+        if np.linalg.norm(s) < tol:
+            return x0
+        k += 1
 
-    # Test case 2
-    result = broyden([-1.5, -2.0])
-    print(result)
+print("Método de Broyden\n")
 
-    # Test case 3
-    result = broyden([0.0, 0.0])
-    print(result)
+n = int(input("Ingrese el número de funciones: "))
+functions = []
+for i in range(n):
+    functions.append(input(f"Ingrese la función {i+1}: "))
 
-# test_broyden()
+x = []
+
+print("Ingrese los valores del vector inicial ('initial guess')")
+for i in range(len(functions)):
+    valor = float(input(f"Componente {i+1}:"))
+    x.append(valor)
+
+broyden(x)
+
+"""Ejemplos de entradas"""
+# Ejemplo 1
+# Número de funciones: 2
+# f1: x0**2 - x1 - 1
+# f2: x0 - x1**2 + 1
+# Vector inicial:
+# componente 1: 1.5
+# componente 2: 2.0
+
+# Ejemplo 2
+# Número de funciones: 3
+# f1: 3*x0 - np.cos(x0*x2) - 0.5
+# f2: x0**2 - 81*(x1+0.1)**2 + np.sin(x2) + 1.06
+# f3: np.exp(-x0*x1) + 20*x2 + (10*np.pi - 3)/3
+# Vector inicial: 
+# componente 1: 0.1
+# componente 2: 0.1
+# componente 3: -0.1]
