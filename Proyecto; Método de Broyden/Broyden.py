@@ -1,11 +1,15 @@
 import numpy as np
-""" "Buen" método Broyden para un sistema de ecuaciones no lineales en [`F`](@ref).
-Requiere el vector inicial X. Eps opcionales. J inicial aproximada por diferenciación."""
+import warnings
+""" 'Buen' método Broyden para un sistema de ecuaciones no lineales.
+Requiere el vector inicial X. Eps opcional. J (jacobiano) inicial aproximada por diferencias finitas.
+Dentro del código se pueden ver las iteraciones de cada paso, solo hace falta quitar los comentarios en las líneas 9 y 26."""
 
+np.seterr(all='raise')
+warnings.filterwarnings('error')
 
 def broyden(X, eps=1e-6):
     # Quitar comentario para ver iteración
-    print(X)
+    # print(X)
 
     # Calcular el valor de la función en el punto X
     FX = F(X)
@@ -15,6 +19,7 @@ def broyden(X, eps=1e-6):
 
     # Iterar hasta que la norma de FX sea menor que eps
     while np.linalg.norm(FX) > eps:
+        # print("-----------------------------------------------------")
         # Guardar el valor actual de X
         Xold = X
 
@@ -31,31 +36,45 @@ def broyden(X, eps=1e-6):
         FXold = FX
 
         # Calcular el nuevo valor de la función en el punto X
+        
         FX = F(X)
 
+        if FX.any() == "Error":
+            return X
+        
         # Calcular la diferencia entre los nuevos y antiguos valores de FX
         deltaF = FX - FXold
-
+        
         # Transponer deltaX
         trans = deltaX.T
 
         # Actualizar la inversa de la matriz Jacobiana utilizando el método de Broyden
-        invJ = invJ + np.dot((deltaX - np.dot(invJ, deltaF)), trans) / np.dot(trans, np.dot(invJ, deltaF))
+        # invJ = invJ + np.dot((deltaX - np.dot(invJ, deltaF)), trans) / np.dot(trans, np.dot(invJ, deltaF))
+        # print("***",(deltaX - np.dot(invJ, deltaF)))
+        invJ = invJ + np.dot((deltaX - np.dot(invJ, deltaF)) / (np.dot(trans, np.dot(invJ, deltaF))),np.dot(trans,invJ))
+        # print("+++",invJ)
 
     return X
 
 """F es la función"""
 
 def F(X):
-    # Devolver un array con los valores de la función F(X)
     return np.array([X[0]**2 - X[1] - 1, X[0] - X[1]**2 + 1])
+    # try:
+    #     X[0]**2 + X[1]**2 + X[2]**2 - 3
+    # except RuntimeWarning:
+    #     return "Error"
+    
+    # return np.array([X[0]**2 + X[1]**2 + X[2]**2 - 3, 
+    #                  X[0]**2 + X[1]**2 - X[2] - 1,
+    #                  X[0] + X[1] + X[2] - 3])
 
-"""fdJ toma los argumentos X, FX, h y calcula la matriz jacobiana usando diferencias finitas.
+"""La función fdJ toma los argumentos X, FX, h y calcula la matriz jacobiana usando diferencias finitas.
 El parámetro FX es opcional y, si no se proporciona, lo calcula llamando a la función F(X).
 Reemplace x1 y x2 con sus valores iniciales reales cuando use la función fdJ."""
 
 
-def fdJ(X, FX=None, h=1e-4):
+def fdJ(X, FX, h=1e-4):
     # Si FX no se proporciona, calcularlo llamando a la función F(X)
     if FX is None:
         FX = F(X)
@@ -72,5 +91,20 @@ def fdJ(X, FX=None, h=1e-4):
 
     return J
 
-# Imprimir el resultado de la función broyden con un ejemplo de entrada
+# print(broyden([1.0, 0.0, 1.0]))
 print(broyden([1.5, 2.0]))
+# Casos de prueba
+def test_broyden():
+    # Test case 1
+    result = broyden([1.5, 2.0])
+    print(result)
+
+    # Test case 2
+    result = broyden([-1.5, -2.0])
+    print(result)
+
+    # Test case 3
+    result = broyden([0.0, 0.0])
+    print(result)
+
+# test_broyden()
