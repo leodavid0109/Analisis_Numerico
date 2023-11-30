@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 def euler_modificado(f, a, b, N, y0):
     h = (b-a)/N
@@ -36,10 +37,20 @@ def test_euler_modificado():
     print(f"y:{y3}")
 
     # Test case 4
-    def exponential_fn(x, y):
+    def f(x, y):
         return (1+2*x)*(y**0.5)
-    x4, y4 = euler_modificado(exponential_fn, 0, 1, 2, 1)
+    x4, y4 = euler_modificado(f, 0, 1, 10, 1)
     print(f"\nx:{x4}")
     print(f"y:{y4}")
+    print(f"\nx:{x4}")
+    print(f"y:{y4}")
+    plt.figure(figsize=(8, 6))
+    plt.plot(x4, y4, label='Solución numérica')
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.title('Solución de EDO usando series de Taylor (segundo orden)')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 test_euler_modificado()

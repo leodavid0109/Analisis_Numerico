@@ -1,27 +1,6 @@
-# # Método de coeficientes indeterminados
-# from sympy import *
-# from sympy.abc import x
-#
-# def coeficientes_indeterminados(n, a, b):
-#     """
-#     Método de coeficientes indeterminados para resolver sistemas de ecuaciones
-#     lineales.
-#     Parámetros:
-#         n: exactitud deseada.
-#         a: límite inferior del intervalo.
-#         b: límite superior del intervalo.
-#     Regresa:
-#         A_i: coeficientes.
-#     """
-#     sistema = []
-#     for i in range(n):
-#         f = x**i
-#         ecuacion = []
-#         result = integrate(f, (x, a, b))
-#         for j in range(n):
-#
+from sympy import symbols, integrate, solve, Eq
 
-from sympy import symbols, integrate, solve
+# Coeficientes indeterminados para polinomios de grado 3
 
 def generar_bases(n):
     """
@@ -31,49 +10,49 @@ def generar_bases(n):
     bases = [x**i for i in range(n)]
     return bases
 
-def coeficientes_indeterminados(max_orden, limite_inferior, limite_superior):
+def coeficientes_indeterminados(max_orden, a, b):
     """
     Método de coeficientes indeterminados para aproximar un polinomio.
 
     Parámetros:
     - max_orden: Orden máximo del polinomio de aproximación.
-    - limite_inferior: Extremo inferior del intervalo de la integral.
-    - limite_superior: Extremo superior del intervalo de la integral.
+    - a: Extremo inferior del intervalo de la integral.
+    - b: Extremo superior del intervalo de la integral.
 
     Retorna:
     - Lista de coeficientes del polinomio de aproximación.
     """
     x = symbols('x')
+    y, z, w = symbols('y z w')
 
     # Generar bases del espacio de polinomios
     bases = generar_bases(max_orden)
+    # print("Bases:", bases)
 
     # Construir el sistema de ecuaciones
     sistema_ecuaciones = []
+    potencia = 0
+
+    # Inside your loop
     for base in bases:
-        ecuacion = integrate(base * (limite_superior - x) * (x - limite_inferior), (x, limite_inferior, limite_superior)) - 0
+        ecuacion = Eq((y*a**potencia+z*((a+b)/2)**potencia+w*b**potencia),integrate(base, (x, a, b)))
         sistema_ecuaciones.append(ecuacion)
+        potencia += 1
+        # print("Ecuación: ",ecuacion)
+
+    print("Sistema de ecuaciones:", sistema_ecuaciones)
 
     # Resolver el sistema de ecuaciones
-    soluciones = solve(sistema_ecuaciones)
-
-    # Imprimir soluciones para depuración
-    print("Soluciones:", soluciones)
-
-    # Verificar si todas las bases están presentes en las soluciones
-    for base in bases:
-        if base not in soluciones:
-            print(f"Advertencia: La base {base} no está presente en las soluciones.")
+    soluciones = solve(sistema_ecuaciones, (y, z, w))
 
     # Obtener los coeficientes del polinomio de aproximación
-    coeficientes = [soluciones[base] for base in bases]
+    coeficientes = [i for i in soluciones.values()]
 
     return coeficientes
 
 # Ejemplo de uso
-max_orden = 3
-limite_inferior = 0
-limite_superior = 1
+a = 0
+b = 1
 
-coeficientes = coeficientes_indeterminados(max_orden, limite_inferior, limite_superior)
+coeficientes = coeficientes_indeterminados(3, a, b)
 print("Coeficientes del polinomio de aproximación:", coeficientes)
